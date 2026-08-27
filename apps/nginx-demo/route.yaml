@@ -1,0 +1,17 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: nginx-demo
+  namespace: deployment-test
+  labels:
+    app: nginx-demo
+spec:
+  to:
+    kind: Service
+    name: nginx-demo
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
