@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-demo
+  namespace: deployment-test
+  labels:
+    app: nginx-demo
+spec:
+  selector:
+    app: nginx-demo
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
+  type: ClusterIP
