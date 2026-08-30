@@ -40,3 +40,11 @@ spec:
               path: /
               port: 8080
             initialDelaySeconds: 15
+          volumeMounts:
+          - name: html
+            mountPath: /usr/share/nginx/html
+            readOnly: true
+        volumes:
+        - name: html
+          configMap:
+            name: nginx-html
