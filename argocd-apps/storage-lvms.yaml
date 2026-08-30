@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: storage-lvms
+  namespace: openshift-gitops
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/pindych-michal/argocd-demo.git
+    targetRevision: main
+    path: apps/storage-lvms
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+      - ApplyOutOfSyncOnly=true
+    retry:
+      limit: 30
+      backoff:
+        duration: 15s
+        factor: 2
+        maxDuration: 5m
+  ignoreDifferences:
+    - group: lvm.topolvm.io
+      kind: LVMCluster
+      jsonPointers:
+        - /spec/storage/deviceClasses/0/thinPoolConfig/chunkSize
+        - /spec/storage/deviceClasses/0/thinPoolConfig/chunkSizeCalculationPolicy
+        - /spec/storage/deviceClasses/0/thinPoolConfig/metadataSize
+        - /spec/storage/deviceClasses/0/thinPoolConfig/metadataSizeCalculationPolicy
