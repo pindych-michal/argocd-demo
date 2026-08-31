@@ -8,8 +8,8 @@ data:
     <html>
     <head><title>nginx-demo</title></head>
     <body>
-      <h1>nginx-demo działa!</h1>
-      <p>Deployment w namespace deployment-test</p>
+      <h1>==============================================HELLO FUCKESSSSS==========================================</h1>
+      <p>Deployment w namespace deployment-test OK !!!!!!!!!!!!!!!!!!!!!!</p>
     </body>
     </html>
   healthz: |
