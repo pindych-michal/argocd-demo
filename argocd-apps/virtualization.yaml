@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: openshift-virtualization-operator
+  name: openshift-virtualization
   namespace: openshift-gitops
 spec:
   project: default
@@ -12,13 +12,22 @@ spec:
   destination:
     server: https://kubernetes.default.svc
   syncPolicy:
-    # BRAK sekcji "automated" -> sync tylko ręcznie z GUI/CLI
+    # nadal brak "automated" -> sync wyzwalasz ręcznie z GUI
     syncOptions:
       - CreateNamespace=false
       - RespectIgnoreDifferences=true
+    retry:
+      limit: 10
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 10m
   ignoreDifferences:
     - group: operators.coreos.com
       kind: Subscription
       jsonPointers:
         - /spec/startingCSV
-        - /status
+    - group: hco.kubevirt.io
+      kind: HyperConverged
+      jsonPointers:
+        - /spec
