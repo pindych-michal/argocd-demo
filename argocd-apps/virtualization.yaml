@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: openshift-virtualization-operator
+  namespace: openshift-gitops
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/pindych-michal/argocd-demo.git
+    targetRevision: main
+    path: apps/openshift-virtualization
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    # BRAK sekcji "automated" -> sync tylko ręcznie z GUI/CLI
+    syncOptions:
+      - CreateNamespace=false
+      - RespectIgnoreDifferences=true
+  ignoreDifferences:
+    - group: operators.coreos.com
+      kind: Subscription
+      jsonPointers:
+        - /spec/startingCSV
+        - /status
