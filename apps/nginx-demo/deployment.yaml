@@ -40,7 +40,7 @@ spec:
             initialDelaySeconds: 15
           volumeMounts:
             - name: html
-              mountPath: /usr/share/nginx/html
+              mountPath: /opt/app-root/src
               readOnly: true
       volumes:
         - name: html
