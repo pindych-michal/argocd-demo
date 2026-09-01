@@ -1,7 +1,8 @@
 # 0. Prerequisite
--- Bind DNS server configuration 
--- IOS on Proxmox (URL link from redhat cloude) 
--- GIT repo prepared - please refer to https://github.com/pindych-michal/argocd-demo
+
+- Bind DNS server configuration 
+- IOS on Proxmox (URL link from redhat cloude) 
+- GIT repo prepared - please refer to https://github.com/pindych-michal/argocd-demo
 
 
 
