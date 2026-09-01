@@ -13,3 +13,7 @@ ansible-playbook -i inventory/hosts.yml playbooks/configure-nexus.yml -vvv
 ansible-playbook -i inventory/hosts.yml playbooks/mirror-to-nexus.yml -vvv --check
 
 ```
+
+
+
+# OC Mirror Synchronization 
