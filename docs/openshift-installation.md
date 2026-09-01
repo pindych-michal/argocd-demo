@@ -1,4 +1,4 @@
-0. Prerequisite
+# 0. Prerequisite
 -- Bind DNS server configuration 
 -- IOS on Proxmox (URL link from redhat cloude) 
 -- GIT repo prepared - please refer to https://github.com/pindych-michal/argocd-demo
@@ -7,7 +7,7 @@
 
 
 
-1. Openshift instalaltion from cloud
+# 1. Openshift instalaltion from cloud
 
 ```
 https://console.redhat.com/openshift/create/datacenter 
@@ -76,7 +76,7 @@ subjects:
 
 
 
-3. Proxmox configuration  
+# 3. Proxmox configuration  
 
 
 ```
@@ -104,10 +104,10 @@ network:
 
 boot the VM 
 
-``
+```
 
 
-4. ARGO CD Sync 
+# 4. ARGO CD Sync 
 
 oc apply -f https://raw.githubusercontent.com/pindych-michal//argocd-demo/main/argocd-apps/root.yaml 
 
