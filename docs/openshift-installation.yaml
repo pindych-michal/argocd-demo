@@ -113,8 +113,8 @@ oc apply -f https://raw.githubusercontent.com/pindych-michal//argocd-demo/main/a
 
 ```
 Deployment of:
-- LVM operator 
-- Virtualization Operator (Manual install from GitOps)
+- LVM operator - recommended for SNO
+- Virtualization Operator (Manual install from GitOps) - we need to have default storage class 
 - Nginx demo 
 
 ```
