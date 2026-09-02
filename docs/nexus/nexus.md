@@ -50,12 +50,28 @@ ansible-playbook -i inventory/hosts.yml playbooks/mirror-to-nexus.yml -vvv --che
 
 
 // Synchronization releases 
-ansible-playbook -i inventory/hosts.yml playbooks/mirror-to-nexus.yml -e ocp_channel=stable-4.22 -e ocp_min_version=4.22.10 -e ocp_max_version=4.22.10 -vvv --check
+ansible-playbook -i inventory/hosts.yml playbooks/mirror-to-nexus.yml -e ocp_channel=stable-4.22 -e ocp_min_version=4.22.10 -e ocp_max_version=4.22.10 -vvv
 
 // Synchronization operators 
 ansible-playbook sync-nexus.yaml -e mirror_content=operators -e ocp_channel=stable-4.22 \
   -e '{"mirror_operator_packages":[{"name":"kubevirt-hyperconverged","channels":[{"name":"stable"}]},{"name":"openshift-gitops-operator","channels":[{"name":"latest"}]},{"name":"lvms-operator","channels":[{"name":"stable-4.22"}]}]}'
 
+
+```
+
+
+```
+Nexus cleanup
+
+# pełny reset przed ponownym wdrożeniem
+ansible-playbook playbooks/cleanup-nexus.yaml -e cleanup_confirm=registry.m1.local.net
+
+# CI, bez pytań
+ansible-playbook playbooks/cleanup-nexus.yaml -e cleanup_confirm=registry.m1.local.net -e cleanup_interactive=false
+
+# tylko certyfikaty (naprawa CA bez keyUsage) — blobstore i cache zostają
+ansible-playbook playbooks/cleanup-nexus.yaml -e cleanup_confirm=registry.m1.local.net \
+    -e cleanup_data=false -e cleanup_workspace=false -e cleanup_cache=false
 
 ```
 
