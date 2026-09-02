@@ -30,6 +30,8 @@ chmod 600 pull-secret-merged.json
 
 So we have one faille which will be used to authenticate to public registry and local registry 
 
+
+sed -i 's/\r$//' configure-nexus.yaml
 ```
 
 
