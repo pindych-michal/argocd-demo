@@ -1,3 +1,39 @@
+# OC mirror playbook preparation 
+
+
+```
+1. Pull secret generation for public registry (~/pull-secret.json )
+console.redhat.com/openshift/install/pull-secret  
+- cloud.openshift.com
+- quay.io
+- registry.connect.redhat.com
+- registry.redhat.io
+
+2. Then we must add to this file nexus secret
+
+
+cd ~
+read -rsp 'Haslo uzytkownika ocp-mirror: ' NEXUS_PASS; echo
+NEXUS_AUTH=$(printf '%s' "ocp-mirror:${NEXUS_PASS}" | base64 -w0)
+unset NEXUS_PASS
+
+jq --arg reg 'registry.m1.local.net:5000' --arg auth "$NEXUS_AUTH" \
+   '.auths[$reg] = {"auth": $auth}' \
+   pull-secret.json > pull-secret-merged.json
+
+unset NEXUS_AUTH
+chmod 600 pull-secret-merged.json
+
+
+
+
+
+So we have one faille which will be used to authenticate to public registry and local registry 
+
+```
+
+
+
 
 # Playbook execution
 
