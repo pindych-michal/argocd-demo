@@ -13,9 +13,10 @@ ansible-playbook -i inventory/hosts.yml playbooks/configure-nexus.yml -vvv
 ansible-playbook -i inventory/hosts.yml playbooks/mirror-to-nexus.yml -vvv --check
 
 
-// Synchronization
-ansible-playbook -i inventory/hosts.yml playbooks/sync-nexus.yaml -e ocp_channel=stable-4.22 -e ocp_min_version=4.22.10 -e ocp_max_version=4.22.10
+// Synchronization releases 
+ansible-playbook -i inventory/hosts.yml playbooks/mirror-to-nexus.yml -e ocp_channel=stable-4.22 -e ocp_min_version=4.22.10 -e ocp_max_version=4.22.10 -vvv --check
 
+// Synchronization operators 
 ansible-playbook sync-nexus.yaml -e mirror_content=operators -e ocp_channel=stable-4.22 \
   -e '{"mirror_operator_packages":[{"name":"kubevirt-hyperconverged","channels":[{"name":"stable"}]},{"name":"openshift-gitops-operator","channels":[{"name":"latest"}]},{"name":"lvms-operator","channels":[{"name":"stable-4.22"}]}]}'
 
