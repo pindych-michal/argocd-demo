@@ -110,7 +110,8 @@ boot the VM
 
 # 4. ARGO CD Sync 
 
-oc apply -f https://raw.githubusercontent.com/pindych-michal//argocd-demo/main/argocd-apps/root.yaml 
+oc apply -f https://raw.githubusercontent.com/pindych-michal/argocd-demo/main/argocd-apps/root.yaml 
+oc apply -f https://raw.githubusercontent.com/pindych-michal/argocd-demo/main/bootstrap/custom-manifest.yaml 
 
 ```
 Deployment of:
