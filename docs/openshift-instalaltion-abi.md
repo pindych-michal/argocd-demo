@@ -219,7 +219,7 @@ nmstatectl --version
 
 ```
 # copy the files between jumphost and proxmos 
-scp ubuntu-24.04.iso root@192.168.1.200:/var/lib/vz/template/iso/
+scp agent.x86_64.iso root@192.168.1.200:/var/lib/vz/template/iso/
 
 ```
 
