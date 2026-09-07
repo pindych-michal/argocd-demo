@@ -228,3 +228,12 @@ scp agent.x86_64.iso root@192.168.1.200:/var/lib/vz/template/iso/
 openshift-install agent wait-for bootstrap-complete
 openshift-install wait-for install-complete
 ```
+
+
+# Phase 4 (Additional configuration after deployment) 
+
+```
+oc apply -f https://raw.githubusercontent.com/pindych-michal/argocd-demo/main/argocd-apps/root.yaml
+
+oc apply -f https://raw.githubusercontent.com/pindych-michal/argocd-demo/main/bootstrap/custom-manifest.yaml
+```
