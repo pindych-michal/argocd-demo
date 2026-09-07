@@ -142,7 +142,8 @@ hosts:
       # bo /dev/sda potrafi się przenumerować.
       deviceName: "/dev/sda"
 
-    # Konfiguracja sieci w formacie NMState (ten sam co w nmstate/NNCP).
+    # Konfiguracja sieci w formacie NMState (ten sam co w nmstate/NNCP). tutaj trzeba doisntalowac nmstate na samym jumhoscie
+    # inaczej nie przejdzie validacja zaszyta w openshift-install 
     networkConfig:
       interfaces:
         - name: ens18
