@@ -28,7 +28,7 @@ https://console.redhat.com/openshift/create/datacenter
 # Phase 1 ( Input file preparation: install-config.yaml / agent-config.yaml ) 
 
 
-## install-config
+## install-config.yaml
 
 ```
 apiVersion: v1
@@ -110,7 +110,7 @@ sshKey: '................ m1.local.net'
 ```
 
 
-## agent-config
+## agent-config.yaml
 
 ```
 apiVersion: v1beta1
