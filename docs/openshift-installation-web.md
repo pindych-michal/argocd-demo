@@ -120,7 +120,7 @@ Deployment of:
 
 ```
 
-5. Final testing after deployment 
+# 5. Final testing after deployment 
 
 ```
 disk: 
@@ -129,5 +129,142 @@ NODE=$(oc get nodes -o jsonpath='{.items[0].metadata.name}')
 oc get --raw /api/v1/nodes/$NODE/proxy/stats/summary | jq '.node | {nodeFs: .fs, imageFs: .runtime.imageFs}'
 oc debug node/m1 -- chroot /host lvs -o lv_name,lv_size,data_percent,metadata_percent vg1
 oc get pvc -A -o custom-columns=NS:.metadata.namespace,NAME:.metadata.name,SIZE:.spec.resources.requests.storage,SC:.spec.storageClassName
+
+```
+
+
+```
+#cluster status bash script 
+
+
+#!/bin/bash
+
+# OpenShift Cluster Health Check Script
+# Zapisuje wynik do pliku w bieżącym katalogu
+
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+OUTPUT_FILE="openshift_healthcheck_${TIMESTAMP}.txt"
+LOG_DIR="."
+
+# Kolory (opcjonalne, działają w terminalu)
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo -e "${GREEN}=== OpenShift Cluster Health Check ===${NC}"
+echo "Start: $(date)"
+echo "Wynik zostanie zapisany do: ${OUTPUT_FILE}"
+echo
+
+# Sprawdzenie czy oc jest dostępne
+if ! command -v oc &> /dev/null; then
+    echo -e "${RED}Błąd: komenda 'oc' nie została znaleziona.${NC}"
+    exit 1
+fi
+
+# Sprawdzenie czy jesteśmy zalogowani
+if ! oc whoami &> /dev/null; then
+    echo -e "${RED}Błąd: nie jesteś zalogowany do klastra (oc whoami nie działa).${NC}"
+    exit 1
+fi
+
+{
+    echo "========================================================"
+    echo "  OpenShift Cluster Health Check"
+    echo "  Data: $(date)"
+    echo "  Użytkownik: $(oc whoami)"
+    echo "  Serwer: $(oc whoami --show-server 2>/dev/null || echo 'nieznany')"
+    echo "========================================================"
+    echo
+
+    echo ">>> 1. Cluster Version"
+    echo "--------------------------------------------------------"
+    oc get clusterversion -o wide 2>&1
+    echo
+    oc get clusterversion -o yaml 2>&1 | head -100
+    echo
+    echo
+
+    echo ">>> 2. Cluster Operators"
+    echo "--------------------------------------------------------"
+    oc get clusteroperators 2>&1
+    echo
+    echo "--- Operatory w stanie DEGRADED / PROGRESSING / niedostępne ---"
+    oc get co --no-headers 2>/dev/null | awk '$3!="True" || $4!="False" || $5!="False" {print}'
+    echo
+    echo
+
+    echo ">>> 3. Nodes"
+    echo "--------------------------------------------------------"
+    oc get nodes -o wide 2>&1
+    echo
+    echo
+
+    echo ">>> 4. Pody niebędące w stanie Running / Succeeded"
+    echo "--------------------------------------------------------"
+    oc get pods -A --field-selector=status.phase!=Running,status.phase!=Succeeded 2>&1
+    echo
+    echo
+
+    echo ">>> 5. Krytyczne namespace'y"
+    echo "--------------------------------------------------------"
+    for ns in openshift-kube-apiserver openshift-etcd openshift-authentication openshift-console openshift-ingress openshift-monitoring; do
+        echo "----- Namespace: $ns -----"
+        oc get pods -n $ns -o wide 2>&1
+        echo
+    done
+    echo
+
+    echo ">>> 6. Zużycie zasobów (jeśli metrics dostępne)"
+    echo "--------------------------------------------------------"
+    echo "--- Nodes ---"
+    oc adm top nodes 2>&1
+    echo
+    echo "--- Top 20 podów według CPU ---"
+    oc adm top pods -A --sort-by=cpu 2>&1 | head -25
+    echo
+    echo
+
+    echo ">>> 7. Ostatnie eventy (potencjalne problemy)"
+    echo "--------------------------------------------------------"
+    oc get events -A --sort-by='.lastTimestamp' 2>&1 | tail -50
+    echo
+    echo
+
+    echo ">>> 8. Machine Config / MCP (jeśli używasz)"
+    echo "--------------------------------------------------------"
+    oc get mcp 2>&1 || echo "Brak MachineConfigPools (OK dla niektórych instalacji)"
+    echo
+    oc get nodes -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.annotations.machineconfiguration\.openshift\.io/state}{"\n"}{end}' 2>/dev/null || true
+    echo
+    echo
+
+    echo "========================================================"
+    echo "  Koniec raportu: $(date)"
+    echo "========================================================"
+
+} > "${OUTPUT_FILE}" 2>&1
+
+# Podsumowanie na ekranie
+echo -e "${GREEN}Gotowe!${NC}"
+echo "Raport zapisany do pliku: ${OUTPUT_FILE}"
+echo
+echo "Szybkie podsumowanie:"
+echo "---------------------"
+echo -n "ClusterVersion: "
+oc get clusterversion --no-headers 2>/dev/null | awk '{print $2, $3, $4, $5}'
+echo
+echo "Problematyczne operatory:"
+oc get co --no-headers 2>/dev/null | awk '$3!="True" || $4!="False" || $5!="False" {print "  - "$1}'
+echo
+echo "Node'y nie Ready:"
+oc get nodes --no-headers 2>/dev/null | awk '$2!="Ready" {print "  - "$1" ("$2")"}'
+echo
+echo "Aby zobaczyć pełny raport:"
+echo "  less ${OUTPUT_FILE}"
+echo "  cat ${OUTPUT_FILE}"
+
+
 
 ```
