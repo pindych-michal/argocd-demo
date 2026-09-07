@@ -19,7 +19,7 @@ Interactive (Web based)
 // This values must be identical to support DNS config 
 clustername m1 
 domain local.net 
-DNS: 192.168.1.14 (Ubuntu Bind, Ansible, JumpHost, NTP) or 192.168.1.1 ?? 
+DNS: 192.168.1.14 (Ubuntu Bind, Ansible, JumpHost, NTP, Nexus) 
 
 
 // Network/Infra configuration 
