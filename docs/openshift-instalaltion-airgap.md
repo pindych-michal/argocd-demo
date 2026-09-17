@@ -62,8 +62,8 @@ openssl s_client -connect registry.m1.local.net:5000 -showcerts </dev/null 2>/de
 # to save authetication info on jumhost 
 podman login https://registry.m1.local.net:5000/
 
-curl -su 'admin:devsecops135!!!' https://registry.m1.local.net:5000/v2/_catalog
-curl -su 'admin:devsecops135!!!' https://registry.m1.local.net:5000/v2/openshift/release-images/tags/list
+curl -su 'admin:blebleble' https://registry.m1.local.net:5000/v2/_catalog
+curl -su 'admin:bleblebler' https://registry.m1.local.net:5000/v2/openshift/release-images/tags/list
 
 #idms file search, created by oc mirror (not ansible) 
 find / -name 'idms-oc-mirror.yaml' 2>/dev/null
@@ -154,11 +154,11 @@ fips: false
 # do Nexusa. Jeśli węzeł ma dostęp do internetu, możesz dokleić
 # oryginalne wpisy Red Hata. Ansible playbook to scala z pull-secret.json 
 # ale mozna to wycaignac poleceniem 
-pullSecret: '{"auths":{"registry.m1.local.net:5000":{"auth":"b2NwLW1pcnJvcjpkZXZzZWNvcHMxMzUhISE=","email":"ocp-mirror@local"}}}'
+pullSecret: '{"auths":{"registry.m1.local.net:5000":{"auth":"blebleble","email":"ocp-mirror@local"}}}'
 
 # Klucz publiczny SSH dla użytkownika core. Bez niego nie zdebugujesz
 # nieudanej instalacji.
-sshKey: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG8NDDTxf+xahE2nJt8/ssNgnOhhvTVg0u88BBaXCFBi m1.local.net'
+sshKey: 'ssh-ed25519 AAAACblebleble m1.local.net'
 
 
 # --- CZĘŚĆ DISCONNECTED / NEXUS ---
