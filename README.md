@@ -8,4 +8,4 @@
 - zotregistry ( comparasion with nexus ) , automation 
 - operators for registry deployment
 - how to mirror images for virtualizations
-- how to store credentials (pull secrets, ssh keys ) 
+- how to store credentials (pull secrets, ssh keys )  -  (External Secrets Operator (ESO) )
