@@ -19,12 +19,12 @@ Interactive (Web based)
 // This values must be identical to support DNS config 
 clustername m1 
 domain local.net 
-DNS: 192.168.1.14 (Ubuntu Bind, Ansible, JumpHost, NTP, Nexus) 
+DNS: 192.168.200.1 ( to jest teraz mikrotik - tutaj wszystko powinno byc ustawione !!!! ) 
 
 
 // Network/Infra configuration 
 -- This mac address must be used (reserved in network) 52:AB:3E:7D:91:F4 , 52:ab:3e:7d:91:f4
--- Static IP: 192.168.1.15  
+-- Static IP: 192.168.200.1000  
 
 
 //custom manifest to install ARGO CD  
