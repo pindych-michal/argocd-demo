@@ -1,0 +1,9 @@
+# NMState CR jest cluster-scoped (bez namespace). Jego utworzenie uruchamia
+# nmstate-handler (DaemonSet) na wszystkich node'ach + webhook + CRD NNCP/NNCE/NNS.
+apiVersion: nmstate.io/v1
+kind: NMState
+metadata:
+  name: nmstate
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true

@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vm-networks
+  namespace: openshift-gitops
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/pindych-michal/argocd-demo.git
+    targetRevision: main
+    path: apps/vm-networks
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    # celowo brak "automated" - NNCP rekonfiguruje sieć node'ów, sync ręcznie z GUI
+    # po sprawdzeniu nazwy NIC-a w apps/vm-networks/10-nncp-br-vm.yaml
+    syncOptions:
+      - CreateNamespace=false
+    retry:
+      limit: 5
+      backoff:
+        duration: 30s
+        factor: 2
+        maxDuration: 5m
