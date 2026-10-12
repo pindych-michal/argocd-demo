@@ -1,0 +1,6 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vm-deployment-test
+  labels:
+    argocd.argoproj.io/managed-by: openshift-gitops
