@@ -71,3 +71,16 @@ spec:
       "ipam": {}
     }
 ```
+
+
+
+# Fedora setup 
+
+```
+sudo dnf install -y openssh-server
+sudo systemctl enable --now sshd
+
+
+```
+
+
