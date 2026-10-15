@@ -16,7 +16,8 @@ Legacy mode
 
 Preparation 
 
-- adding new interface to SNO (net1, ens19 ) 
+- adding new interface to SNO (net1, ens19 ) on proxmox 
+- disable firewall on interface net1 on proxmox 
 - creating new namesapce for VM testing "vm-deployment-test"
 - nmstate operator must be available to create nncp ( node network configuration policy ) 
 
