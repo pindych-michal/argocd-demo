@@ -1,0 +1,82 @@
+As confirmed by Cezary Dwojak - at this moment we are investigating L2 connection (gateway for VMs are located outside openshift cluster)
+
+
+
+
+L3 gateway options for VMs on OpenShift:
+
+A. Gateway outside the cluster – OpenShift provides L2 only
+B. Gateway inside the cluster, with NAT (OVN distributed router)
+C. Gateway inside the cluster, no NAT (OVN router + dynamic routing)
+D. Self-managed gateway inside the cluster
+E. Outside OVN-Kubernetes
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+A. Gateway outside the cluster – OpenShift provides L2 only
+
+1 OVN-Kubernetes Localnet (VLAN-backed segment)  - TESTED 
+Logical OVN switch bridged to a physical VLAN via an OVS bridge mapping; the default gateway stays on the core switch / firewall.
+
+2. Linux bridge (Multus bridge CNI) - TESTED 
+Same function as Localnet, implemented with a kernel bridge per node, outside OVN.
+
+3. SR-IOV (VF passthrough)
+VM gets a virtual function of a physical NIC directly in the VLAN.
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+B. Gateway inside the cluster, with NAT (OVN distributed router)
+
+4. Default cluster network (masquerade binding)
+VM sits on the default pod network behind masquerade NAT.
+No direct reachability. Only acceptable for cloud-native style workloads.
+
+5. Primary Layer2 UDN/CUDN with built-in router (SNAT egress)
+Overlay segment (Geneve) spanning the cluster, with a distributed OVN router on every node acting as the gateway; 
+egress is SNAT’ed to the node IP; ingress via Services / MetalLB / Routes.
+
+6. Primary Layer2 CUDN + EgressIP
+As #5, but egress SNAT uses a fixed, admin-assigned IP per namespace/CUDN instead of the node IP.
+
+7. MetalLB LoadBalancer VIP per VM (ingress-only complement)
+A LoadBalancer Service per VM, VIP announced via L2 or BGP, optionally using the VM’s old IP as the VIP.
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+C. Gateway inside the cluster, no NAT (OVN router + dynamic routing)
+
+8. Primary Layer2 CUDN + BGP route advertisements (FRR-K8s)
+The nodes peer with the ToR/core and advertise the CUDN subnet; the OVN router remains the gateway.
+
+
+9. Primary Layer2 CUDN + BGP EVPN (OpenShift 4.22)
+The CUDN becomes a MAC-VRF (L2VNI) / IP-VRF in the data-center EVPN-VXLAN fabric; each node is a VTEP. 
+OpenShift 4.22 adds EVPN so that selected user-defined networks extend into the enterprise EVPN fabric 
+with standards-based MAC-VRF and IP-VRF route advertisement.
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+D. Self-managed gateway inside the cluster
+
+10. Secondary Layer2 overlay + router VM (FRR / VyOS / OPNsense / pfSense)
+A router VM holds the old gateway address on that segment and has an uplink (localnet) to the physical network
+
+11. Admin Policy Based External Routes (multiple external gateways)
+OVN-K feature that steers egress traffic of selected namespaces to external gateways (e.g. a firewall VM/pod)
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+E. Outside OVN-Kubernetes ( Out of scope - not supported by Openshift) 
