@@ -86,3 +86,53 @@ qm set $VMID --ide2 $STORAGE:cloudinit \
 for i in 1 2 3; do qm set $VMID --scsi$i $STORAGE:100,discard=on,iothread=1,ssd=1; done    # dyski pod OSD
 qm start $VMID
 ```
+
+
+## System preparation
+
+```
+sudo -i
+hostnamectl set-hostname ceph1
+sed -i '/127\.0\.1\.1/d' /etc/hosts
+echo "192.168.200.66 ceph1.local.net ceph1" >> /etc/hosts            # [ZMIEŃ]
+touch /etc/cloud/cloud-init.disabled     # konfiguracja już wstrzyknięta; cloud-init nie ma nadpisywać hostname/hosts przy każdym boocie
+dnf -y update
+dnf -y install podman lvm2 chrony python3 firewalld qemu-guest-agent epel-release
+systemctl enable --now chronyd firewalld qemu-guest-agent
+firewall-cmd --permanent --add-service=ceph-mon --add-service=ceph && firewall-cmd --reload   # 3300, 6789, 6800-7300
+chronyc tracking | head -3               # "Leap status : Normal" = czas zsynchronizowany
+reboot
+```
+
+
+## Cephadm/bootsrtap 
+
+```
+# ssh rocky@192.168.200.66 ; sudo -i
+CEPH_RELEASE=20.2.5             # najnowsze 20.2.x wg https://docs.ceph.com/en/latest/releases/
+cd /root
+curl --fail --silent --show-error --location --remote-name \
+  https://download.ceph.com/rpm-${CEPH_RELEASE}/el9/noarch/cephadm
+chmod +x cephadm
+./cephadm version               # cephadm version 20.2.x (...) tentacle (stable)
+./cephadm add-repo --release tentacle
+./cephadm install               # pakiet cephadm w PATH
+cephadm install ceph-common     # natywne ceph / rbd w VM (bez "cephadm shell")
+
+cephadm bootstrap --mon-ip 192.168.200.66 \
+  --single-host-defaults --skip-monitoring-stack \
+  --initial-dashboard-user admin --initial-dashboard-password 'ZMIEN-haslo-dashboard' --dashboard-password-noupdate
+
+ceph -s
+ceph orch host ls 
+
+```
+
+## OSD 
+
+```
+ceph orch device ls                            # sdb, sdc, sdd → AVAILABLE Yes
+for d in sdb sdc sdd; do ceph orch daemon add osd ceph1:/dev/$d; done
+sleep 60 ; ceph -s                             # 3 osds: 3 up, 3 in ; HEALTH_OK ; 1 pool (.mgr), 1 pg active+clean
+ceph osd tree
+```
