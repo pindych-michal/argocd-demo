@@ -221,7 +221,4 @@ EOF
 oc create -f ocp-rbd.yaml
 oc get sc,volumesnapshotclass              # lvms-vg1 (default) zostaje; ceph-rbd bez (default)
 
-
-
-
 ```
