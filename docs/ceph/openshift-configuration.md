@@ -297,3 +297,38 @@ oc -n ceph-csi-test get pvc,pod -w          # obie PVC Bound, pod Running (~30 s
 oc -n ceph-csi-test exec ceph-writer -- sh -c 'df -h /data; tail -2 /data/log.txt'
 
 ```
+
+```
+# Optionally snapshoot and restore 
+cat > ocp-test-snap.yaml <<'EOF'
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: ceph-rbd-fs-snap
+  namespace: ceph-csi-test
+spec:
+  volumeSnapshotClassName: ceph-rbd-snap
+  source:
+    persistentVolumeClaimName: ceph-rbd-fs
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ceph-rbd-fs-restore
+  namespace: ceph-csi-test
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: ceph-rbd
+  dataSource:
+    name: ceph-rbd-fs-snap
+    kind: VolumeSnapshot
+    apiGroup: snapshot.storage.k8s.io
+  resources:
+    requests:
+      storage: 2Gi
+EOF
+oc create -f ocp-test-snap.yaml
+oc -n ceph-csi-test get volumesnapshot,pvc     # READYTOUSE true, restore Bound
+# Ceph: rbd snap ls ocp-rbd/<csi-vol-…>  oraz nowy obraz csi-vol-… (klon)
+
+```
