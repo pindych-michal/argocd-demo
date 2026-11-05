@@ -332,3 +332,16 @@ oc -n ceph-csi-test get volumesnapshot,pvc     # READYTOUSE true, restore Bound
 # Ceph: rbd snap ls ocp-rbd/<csi-vol-…>  oraz nowy obraz csi-vol-… (klon)
 
 ```
+
+6. Clean up the test
+
+
+```
+
+oc delete -f ocp-test-snap.yaml ; oc delete -f ocp-test.yaml
+# Ceph: rbd ls ocp-rbd → zostają tylko golden images OCP Virt (reclaimPolicy Delete usunęło testowe)
+
+```
+
+
+
