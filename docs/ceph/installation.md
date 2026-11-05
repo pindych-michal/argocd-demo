@@ -7,6 +7,9 @@
 ceph server (EL9 + cephadm)
 pool ocp-rbd
 client.ocp-rdb
+MON MGR(dashboard) ODS.0 OSD.1 OSD.2
+sda=OS  sdb/sdc/sdd = 3*100 GB (local-lvm)
+
 --------------------------------
 |
 |
