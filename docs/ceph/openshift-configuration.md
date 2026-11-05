@@ -1,1 +1,85 @@
 
+# 0. Introduction 
+
+```
+1. Install the operator (with SCC for OpenShift)
+Put the management layer in place: the Ceph-CSI Operator is a Kubernetes controller that will later build and maintain the actual CSI driver pods for you.
+What is deployed:
+- namespace ceph-csi-operator-system — operator and drivers live here
+- 6 CustomResourceDefinitions in API group csi.ceph.io/v1 (Driver, CephConnection, ClientProfile, ClientProfileMapping, ClientProfileReplication, OperatorConfig)
+- 9 ServiceAccounts
+- Deployment ceph-csi-operator-controller-manager — the only running code; a small, non-privileged pod with a reconcile loop
+- OpenShift-only part: SecurityContextConstraints ceph-csi-operator-ceph-csi-scc
+- a NetworkPolicy isolating the operator pod.
+
+Note: installed from YAML, not through OLM
+
+1a. Patch the SCC ClusterRole (mandatory, manifest bug)
+Make the SCC actually usable. In v1.1.0
+
+
+
+2. Deploy the RBD driver
+Turn the operator into something useful: ask it for an RBD driver instance. This is the moment the actual CSI components appear in the cluster.
+One object — Driver rbd.csi.ceph.com with controllerPlugin.replicas: 1 (single node). The object's name is the CSI driver name and must match provisioner: in the StorageClass later.
+
+What is deployed:
+- Deployment rbd.csi.ceph.com-ctrlplugin — 5 containers: the Ceph plugin plus the CSI sidecars provisioner, attacher, resizer, snapshotter. Runs on the pod network. Handles control operations: rbd create / rm / resize / snap / clone
+- DaemonSet rbd.csi.ceph.com-nodeplugin — 2 containers (plugin + driver-registrar), one pod per node
+- CSIDriver rbd.csi.ceph.com — registers the driver with kubelet;
+- ConfigMap ceph-csi-config
+
+
+
+
+3. Connection to Ceph
+Give the driver the address of the Ceph cluster and a name under which StorageClasses will refer to it. Despite the name, no network connection is made here — this is pure configuration.
+
+What is deployed:
+- CephConnection ceph1 — spec.monitors: [192.168.200.66:6789]
+- ClientProfile ceph1 — cephConnectionRef: ceph1
+
+
+
+
+4. Secret, StorageClass, VolumeSnapshotClass
+Supply the identity the driver will use against Ceph, and expose Ceph to cluster users as an ordinary storage class. After this sub-step anyone can request Ceph-backed storage with a plain PVC.
+
+What is deployed:
+- Secret csi-rbd-secret — userID: ocp-rbd, userKey: AQCY…
+- StorageClass ceph-rbd
+- VolumeSnapshotClass ceph-rbd-snap
+
+4a. Connectivity test without a PVC
+First genuine contact with Ceph from inside OpenShift, before involving the provisioning machinery.
+
+
+5. End-to-end test
+Exercise the whole chain: PVC → provisioner creates an RBD image and a PV → pod is scheduled → node plugin maps the image into the kernel, formats and mounts it → application writes. Then look at the same thing from the Ceph side.
+
+What is deployed:
+- PVC ceph-rbd-fs (2Gi, RWO, Filesystem)
+- PVC ceph-rbd-block (2Gi, RWO, volumeMode: Block)
+- Pod ceph-writer (ubi9-minimal) appending the date to /data/log.txt every 5 s;
+
+
+6. Clean up the test
+Remove the proof, keep the platform. oc delete of the snapshot manifest and the test namespace; because the StorageClass has reclaimPolicy Delete, the driver removes the RBD images and snapshots on Ceph by itself.
+
+
+
+
+```
+
+# 1. Operator installation
+
+```
+mkdir -p ~/ceph-lab && cd ~/ceph-lab
+OP=v1.1.0
+oc create -f https://raw.githubusercontent.com/ceph/ceph-csi-operator/$OP/deploy/all-in-one/install-openshift.yaml
+# gdyby tag nie miał tego pliku (404): zamień $OP na main
+
+oc -n ceph-csi-operator-system get pods -w                   # ceph-csi-operator-controller-manager-…  1/1 Running
+oc get scc ceph-csi-operator-ceph-csi-scc                    # SCC z instalatora (nazwa z prefiksem, inaczej niż w docs)
+oc get clusterrolebinding | grep -c 'ceph-csi-operator-ceph-csi-.*-scc'   # 8 — po jednym na SA każdego sterownika
+```
