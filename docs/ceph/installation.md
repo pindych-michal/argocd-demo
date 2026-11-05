@@ -49,4 +49,10 @@ RBD for RWO and VMs, CephFS for RWX, RGW for backups/registry/observability
 3. Openshift configuration
 4. Workload/testing
 
+clusterID -
+MON - 192.168.200.66 (entry point, authentication, infra map)
+user ID + userKey - credential's to access the ceph pool
+pool - where to store the images
+
+
 ```
