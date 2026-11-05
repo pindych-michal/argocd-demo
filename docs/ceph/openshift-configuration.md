@@ -108,7 +108,7 @@ oc auth can-i use securitycontextconstraints/ceph-csi-operator-ceph-csi-scc \
   --as=system:serviceaccount:ceph-csi-operator-system:ceph-csi-operator-rbd-nodeplugin-sa      # yes
 ```
 
-2. Deploy the RBD driver
+# 2. Deploy the RBD driver
 
 ```
 cat > ocp-driver-rbd.yaml <<'EOF'
