@@ -38,3 +38,15 @@ HTTP REST gateway speaking S3 – apps talk S3 directly.
 Sumamry:
 RBD for RWO and VMs, CephFS for RWX, RGW for backups/registry/observability
 ```
+
+
+# Deployment 
+
+```
+
+1. Ceph server installation 
+2. Networking preparation
+3. Openshift configuration
+4. Workload/testing
+
+```
