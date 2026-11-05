@@ -5,6 +5,7 @@
 ```
 
 1. Install the operator (with SCC for OpenShift)
+1a. Patch the SCC ClusterRole (mandatory, manifest bug)
 2. Deploy the RBD driver
 3. Connection to Ceph
 4. Secret, StorageClass, VolumeSnapshotClass
@@ -97,3 +98,14 @@ oc -n ceph-csi-operator-system get pods -w                   # ceph-csi-operator
 oc get scc ceph-csi-operator-ceph-csi-scc                    # SCC z instalatora (nazwa z prefiksem, inaczej niż w docs)
 oc get clusterrolebinding | grep -c 'ceph-csi-operator-ceph-csi-.*-scc'   # 8 — po jednym na SA każdego sterownika
 ```
+
+## 1a. Patch the SCC ClusterRole (mandatory, manifest bug)
+
+```
+oc patch clusterrole ceph-csi-operator-ceph-csi-scc-user --type=json \
+  -p='[{"op":"replace","path":"/rules/0/resourceNames","value":["ceph-csi-operator-ceph-csi-scc","ceph-csi-scc"]}]'
+oc auth can-i use securitycontextconstraints/ceph-csi-operator-ceph-csi-scc \
+  --as=system:serviceaccount:ceph-csi-operator-system:ceph-csi-operator-rbd-nodeplugin-sa      # yes
+
+```
+
