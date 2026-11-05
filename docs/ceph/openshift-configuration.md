@@ -171,3 +171,57 @@ oc -n ceph-csi-operator-system get cm ceph-csi-config -o jsonpath='{.data.config
 
 ```
 
+# 4. Secret, StorageClass, VolumeSnapshotClass
+
+```
+
+cat > ocp-rbd.yaml <<'EOF'
+apiVersion: v1
+kind: Secret
+metadata:
+  name: csi-rbd-secret
+  namespace: ceph-csi-operator-system
+stringData:
+  userID: ocp-rbd
+  userKey: AQCY3+lq2uDsKBAAzb0NDw4Td/5rA+wXGstVSg==
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ceph-rbd
+  annotations:
+    storageclass.kubevirt.io/is-default-virt-class: "true"   # krok 3: domyślna klasa dla dysków VM; uruchamia też import golden images (sekcja 5)
+provisioner: rbd.csi.ceph.com
+parameters:
+  clusterID: ceph1
+  pool: ocp-rbd
+  imageFeatures: layering
+  csi.storage.k8s.io/fstype: ext4
+  csi.storage.k8s.io/provisioner-secret-name: csi-rbd-secret
+  csi.storage.k8s.io/provisioner-secret-namespace: ceph-csi-operator-system
+  csi.storage.k8s.io/controller-expand-secret-name: csi-rbd-secret
+  csi.storage.k8s.io/controller-expand-secret-namespace: ceph-csi-operator-system
+  csi.storage.k8s.io/node-stage-secret-name: csi-rbd-secret
+  csi.storage.k8s.io/node-stage-secret-namespace: ceph-csi-operator-system
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: Immediate
+---
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshotClass
+metadata:
+  name: ceph-rbd-snap
+driver: rbd.csi.ceph.com
+parameters:
+  clusterID: ceph1
+  csi.storage.k8s.io/snapshotter-secret-name: csi-rbd-secret
+  csi.storage.k8s.io/snapshotter-secret-namespace: ceph-csi-operator-system
+deletionPolicy: Delete
+EOF
+oc create -f ocp-rbd.yaml
+oc get sc,volumesnapshotclass              # lvms-vg1 (default) zostaje; ceph-rbd bez (default)
+
+
+
+
+```
