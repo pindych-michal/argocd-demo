@@ -136,3 +136,48 @@ for d in sdb sdc sdd; do ceph orch daemon add osd ceph1:/dev/$d; done
 sleep 60 ; ceph -s                             # 3 osds: 3 up, 3 in ; HEALTH_OK ; 1 pool (.mgr), 1 pg active+clean
 ceph osd tree
 ```
+
+## User and pool for Openshift 
+
+```
+ceph osd pool create ocp-rbd
+rbd pool init ocp-rbd
+ceph mon set auth_allowed_ciphers aes,aes256k
+ceph auth get-or-create client.ocp-rbd --key-type aes \
+  mon 'profile rbd' osd 'profile rbd pool=ocp-rbd' mgr 'profile rbd pool=ocp-rbd' \
+  -o /etc/ceph/ceph.client.ocp-rbd.keyring
+# trzy ostrzeżenia oczekiwane w labie (klucz aes dla OCP) — wyciszamy:
+ceph health mute AUTH_INSECURE_KEYS_ALLOWED --sticky         # mon dopuszcza szyfr aes
+ceph health mute AUTH_INSECURE_KEYS_CREATABLE --sticky       # mon pozwala tworzyć klucze aes
+ceph health mute AUTH_INSECURE_CLIENT_KEY_TYPE --sticky      # istnieje klient z kluczem aes
+ceph config set mon mon_allow_pool_delete true                # lab: żeby dało się sprzątać pule
+
+# test tą samą tożsamością, której użyje provisioner:
+rbd --id ocp-rbd create ocp-rbd/test --size 1G --image-feature layering
+rbd --id ocp-rbd info ocp-rbd/test
+rbd --id ocp-rbd rm ocp-rbd/test
+ceph -s                                                       # HEALTH_OK (muted: …), 2 pools, 33 pgs active+clean
+
+```
+
+```
+#data required on openshift side
+
+echo "fsid:    $(ceph fsid)"
+ceph mon dump 2>/dev/null | grep '^0:'        # 0: [v2:10.10.10.11:3300/0,v1:10.10.10.11:6789/0] mon.ceph1
+echo "userID:  ocp-rbd"
+echo "userKey: $(ceph auth get-key client.ocp-rbd)"   # klucz typu aes zaczyna się od "AQ"
+
+```
+
+## Snapshot of VM, additional testing 
+
+```
+# Proxmox 1 — punkt powrotu:
+qm shutdown 200 --timeout 120 && qm snapshot 200 ceph-ready --description "Tentacle, pool ocp-rbd, client.ocp-rbd (aes)" && qm start 200
+# powrót po nieudanym eksperymencie: qm stop 200 ; qm rollback 200 ceph-ready ; qm start 200
+# (po rollbacku ssh zgłosi zmianę host key: ssh-keygen -R 10.10.10.11)
+
+# Proxmox 2 (albo dowolny host w LAN) — czy MON jest osiągalny:
+for p in 3300 6789; do timeout 3 bash -c "</dev/tcp/10.10.10.11/$p" && echo "port $p OK" || echo "port $p FAIL"; done
+```
