@@ -139,3 +139,35 @@ Please refer to list of all supported ceph's drivers at this moment:
 - nvmeof.csi.ceph.com NVMe/TCP/RWO
 
 ```
+
+3. Connection to Ceph
+
+
+```
+
+cat > ocp-ceph-connection.yaml <<'EOF'
+apiVersion: csi.ceph.io/v1
+kind: CephConnection
+metadata:
+  name: ceph1
+  namespace: ceph-csi-operator-system
+spec:
+  monitors:
+    - 192.168.200.66:6789
+---
+apiVersion: csi.ceph.io/v1
+kind: ClientProfile
+metadata:
+  name: ceph1                      # = clusterID w StorageClass i VolumeSnapshotClass
+  namespace: ceph-csi-operator-system
+spec:
+  cephConnectionRef:
+    name: ceph1
+EOF
+oc create -f ocp-ceph-connection.yaml
+oc -n ceph-csi-operator-system get cephconnection,clientprofile
+oc -n ceph-csi-operator-system get cm ceph-csi-config -o jsonpath='{.data.config\.json}{"\n"}'
+# → [{"clusterID":"ceph1","monitors":["192.168.200.66:6789"], …}]
+
+```
+
