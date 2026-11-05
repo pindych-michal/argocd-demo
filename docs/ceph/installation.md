@@ -67,7 +67,7 @@ OSD - raw disks entries
 ```
 #proxmox shell 
 
-VMID=200 ; VMNAME=ceph1 ; STORAGE=local-lvm ; BRIDGE=vmbr0            
+VMID=200 ; VMNAME=ceph1 ; STORAGE=local-lvm ; BRIDGE=vmbr0 ; VLAN=100          
 IP=10.10.100.50/24 ; GW=10.10.100.1 ; DNS=10.10.100.1 ; DOMAIN=local.net  
 IMG=Rocky-9-GenericCloud-Base.latest.x86_64.qcow2
 
