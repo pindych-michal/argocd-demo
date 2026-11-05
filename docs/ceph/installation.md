@@ -53,6 +53,7 @@ clusterID -
 MON - 192.168.200.66 (entry point, authentication, infra map)
 user ID + userKey - credential's to access the ceph pool
 pool - where to store the images
+OSD - raw disks entries
 
 
 ```
