@@ -106,6 +106,36 @@ oc patch clusterrole ceph-csi-operator-ceph-csi-scc-user --type=json \
   -p='[{"op":"replace","path":"/rules/0/resourceNames","value":["ceph-csi-operator-ceph-csi-scc","ceph-csi-scc"]}]'
 oc auth can-i use securitycontextconstraints/ceph-csi-operator-ceph-csi-scc \
   --as=system:serviceaccount:ceph-csi-operator-system:ceph-csi-operator-rbd-nodeplugin-sa      # yes
+```
+
+2. Deploy the RBD driver
+
+```
+cat > ocp-driver-rbd.yaml <<'EOF'
+apiVersion: csi.ceph.io/v1
+kind: Driver
+metadata:
+  name: rbd.csi.ceph.com
+  namespace: ceph-csi-operator-system
+spec:
+  controllerPlugin:
+    replicas: 1          # SNO; domyślnie 2
+EOF
+oc create -f ocp-driver-rbd.yaml
+
+oc -n ceph-csi-operator-system get pods -w
+# rbd.csi.ceph.com-ctrlplugin-…   5/5 Running
+# rbd.csi.ceph.com-nodeplugin-…   2/2 Running   (DaemonSet, hostNetwork)
+oc get csidriver rbd.csi.ceph.com
 
 ```
 
+```
+Please refer to list of all supported ceph's drivers at this moment:
+
+- rbd.csi.ceph.com - block/RWO
+- cephfs.csi.ceph.com - file/RWX
+- nfs.csi.ceph.com - nfs/RWX
+- nvmeof.csi.ceph.com NVMe/TCP/RWO
+
+```
