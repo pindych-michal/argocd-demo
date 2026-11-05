@@ -91,10 +91,12 @@ qm start $VMID
 ## System preparation
 
 ```
+# proxmox shell
+# ssh rocky@10.10.100.50
 sudo -i
 hostnamectl set-hostname ceph1
 sed -i '/127\.0\.1\.1/d' /etc/hosts
-echo "192.168.200.66 ceph1.local.net ceph1" >> /etc/hosts            # [ZMIEŃ]
+echo "10.10.100.50 ceph1.local.net ceph1" >> /etc/hosts            # [ZMIEŃ]
 touch /etc/cloud/cloud-init.disabled     # konfiguracja już wstrzyknięta; cloud-init nie ma nadpisywać hostname/hosts przy każdym boocie
 dnf -y update
 dnf -y install podman lvm2 chrony python3 firewalld qemu-guest-agent epel-release
@@ -108,7 +110,7 @@ reboot
 ## Cephadm/bootsrtap 
 
 ```
-# ssh rocky@192.168.200.66 ; sudo -i
+# ssh rocky@10.10.100.50 ; sudo -i
 CEPH_RELEASE=20.2.5             # najnowsze 20.2.x wg https://docs.ceph.com/en/latest/releases/
 cd /root
 curl --fail --silent --show-error --location --remote-name \
@@ -119,9 +121,9 @@ chmod +x cephadm
 ./cephadm install               # pakiet cephadm w PATH
 cephadm install ceph-common     # natywne ceph / rbd w VM (bez "cephadm shell")
 
-cephadm bootstrap --mon-ip 192.168.200.66 \
+cephadm bootstrap --mon-ip 10.10.100.50 \
   --single-host-defaults --skip-monitoring-stack \
-  --initial-dashboard-user admin --initial-dashboard-password 'ZMIEN-haslo-dashboard' --dashboard-password-noupdate
+  --initial-dashboard-user admin --initial-dashboard-password 'devsecops135!!!' --dashboard-password-noupdate
 
 ceph -s
 ceph orch host ls 
