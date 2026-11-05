@@ -1,6 +1,20 @@
 
 # 0. Introduction 
 
+
+```
+
+1. Install the operator (with SCC for OpenShift)
+2. Deploy the RBD driver
+3. Connection to Ceph
+4. Secret, StorageClass, VolumeSnapshotClass
+4a. Connectivity test without a PVC
+5. End-to-end test
+6. Clean up the test
+
+```
+
+
 ```
 1. Install the operator (with SCC for OpenShift)
 Put the management layer in place: the Ceph-CSI Operator is a Kubernetes controller that will later build and maintain the actual CSI driver pods for you.
@@ -71,7 +85,7 @@ Remove the proof, keep the platform. oc delete of the snapshot manifest and the 
 
 ```
 
-# 1. Operator installation
+# 1. Install the operator (with SCC for OpenShift)
 
 ```
 mkdir -p ~/ceph-lab && cd ~/ceph-lab
