@@ -60,3 +60,29 @@ OSD - raw disks entries
 
 
 ```
+
+
+## VM on proxmox 
+
+```
+#proxmox shell 
+
+VMID=200 ; VMNAME=ceph1 ; STORAGE=local-lvm ; BRIDGE=vmbr0            
+IP=192.168.200.66/24 ; GW=192.168.200.1 ; DNS=192.168.200.1 ; DOMAIN=local.et    
+IMG=Rocky-9-GenericCloud-Base.latest.x86_64.qcow2
+
+pvesm status                      # $STORAGE: potrzeba ~340 GB wolnego (thin); gdy mniej → dyski OSD po 60 GB
+[ -f ~/.ssh/id_ed25519.pub ] || ssh-keygen -t ed25519 -N '' -f ~/.ssh/id_ed25519
+wget -N -P /var/lib/vz/template https://dl.rockylinux.org/pub/rocky/9/images/x86_64/$IMG
+
+qm create $VMID --name $VMNAME --ostype l26 --cpu host --cores 4 --memory 12288 --balloon 0 \
+  --net0 virtio,bridge=$BRIDGE --scsihw virtio-scsi-single --agent enabled=1 --serial0 socket --onboot 1
+qm disk import $VMID /var/lib/vz/template/$IMG $STORAGE        # PVE 7.x: qm importdisk
+qm set $VMID --scsi0 $STORAGE:vm-$VMID-disk-0,discard=on,iothread=1,ssd=1 --boot order=scsi0
+qm disk resize $VMID scsi0 40G
+qm set $VMID --ide2 $STORAGE:cloudinit \
+  --ciuser rocky --cipassword 'ZMIEN-haslo-konsoli' --sshkeys ~/.ssh/id_ed25519.pub \
+  --ipconfig0 ip=$IP,gw=$GW --nameserver $DNS --searchdomain $DOMAIN
+for i in 1 2 3; do qm set $VMID --scsi$i $STORAGE:100,discard=on,iothread=1,ssd=1; done    # dyski pod OSD
+qm start $VMID
+```
