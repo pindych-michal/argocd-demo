@@ -23,4 +23,18 @@ ceph-csi (RBD) -> SC ceph-rbd
 pod with PVC/ Opnshift Virt
 -----------------------------
 
+
+Native storage types:
+
+1. Block – RBD (RADOS Block Device)
+Single writer (RWO); RWX only in raw Block mode
+
+2. File – CephFS (Ceph File System)
+POSIX shared filesystem; requires MDS (Metadata Server) daemons;
+
+3. Object – RGW (RADOS Gateway, “Ceph Object Gateway”)
+HTTP REST gateway speaking S3 – apps talk S3 directly.
+
+Sumamry:
+RBD for RWO and VMs, CephFS for RWX, RGW for backups/registry/observability
 ```
