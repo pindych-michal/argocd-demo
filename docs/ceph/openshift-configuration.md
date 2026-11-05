@@ -222,3 +222,78 @@ oc create -f ocp-rbd.yaml
 oc get sc,volumesnapshotclass              # lvms-vg1 (default) zostaje; ceph-rbd bez (default)
 
 ```
+
+# 4a. Connectivity test without a PVC
+
+```
+KEY=$(oc -n ceph-csi-operator-system get secret csi-rbd-secret -o jsonpath='{.data.userKey}' | base64 -d)
+oc -n ceph-csi-operator-system exec deploy/rbd.csi.ceph.com-ctrlplugin -c csi-rbdplugin -- \
+  rbd --id ocp-rbd --key "$KEY" -m 192.168.200.66:6789 ls ocp-rbd
+
+```
+
+# 5. End-to-end test
+
+```
+cat > ocp-test.yaml <<'EOF'
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ceph-csi-test
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ceph-rbd-fs
+  namespace: ceph-csi-test
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: ceph-rbd
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ceph-rbd-block            # tryb Block — tak będą wyglądać dyski VM w kroku 3
+  namespace: ceph-csi-test
+spec:
+  accessModes: [ReadWriteOnce]
+  volumeMode: Block
+  storageClassName: ceph-rbd
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ceph-writer
+  namespace: ceph-csi-test
+spec:
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: writer
+      image: registry.access.redhat.com/ubi9/ubi-minimal
+      command: ["/bin/sh", "-c", "while true; do date >> /data/log.txt; sleep 5; done"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop: [ALL]
+      volumeMounts:
+        - name: data
+          mountPath: /data
+  volumes:
+    - name: data
+      persistentVolumeClaim:
+        claimName: ceph-rbd-fs
+EOF
+oc create -f ocp-test.yaml
+oc -n ceph-csi-test get pvc,pod -w          # obie PVC Bound, pod Running (~30 s)
+oc -n ceph-csi-test exec ceph-writer -- sh -c 'df -h /data; tail -2 /data/log.txt'
+
+```
